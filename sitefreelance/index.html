@@ -170,13 +170,18 @@
   </div>
 
   <form id="contactForm" class="contact-form-large">
-    <input type="text" name="name" placeholder="Nom" required>
-    <input type="email" name="email" placeholder="Votre e-mail" required>
-    <input type="text" name="title" placeholder="Objet / Sujet du message" required>
-    <textarea name="message" placeholder="Votre message..." required></textarea>
-    <button class="btn contact-btn" type="submit">Envoyer le message</button>
 
-  </form>
+  <!-- Honeypot anti-spam (invisible) -->
+  <input type="text" name="website" id="website" style="display:none !important;">
+
+  <input type="text" name="name" placeholder="Nom" required>
+  <input type="email" name="email" placeholder="Votre e-mail" required>
+  <input type="text" name="title" placeholder="Objet / Sujet du message" required>
+  <textarea name="message" placeholder="Votre message..." required></textarea>
+  <button class="btn contact-btn" type="submit">Envoyer le message</button>
+
+</form>
+
 </section>
 
   </main>

@@ -1,10 +1,13 @@
 // ====== Test de chargement ======
-console.log("Script chargé ✅");
+console.log("Script chargé avec anti-spam PRO 🚀");
 
 document.addEventListener('DOMContentLoaded', () => {
 
   // ====== CONFIG BACKEND ======
-  const BACKEND_URL = "https://sitefreelance.onrender.com/contact"; // Ton backend Render
+  const BACKEND_URL = "https://sitefreelance.onrender.com";
+
+  // ====== Temps de début (anti-spam) ======
+  window.formStart = Date.now();
 
   // ====== MENU MOBILE ======
   const menuBtn = document.getElementById('menuBtn');
@@ -53,15 +56,30 @@ document.addEventListener('DOMContentLoaded', () => {
     contactForm.addEventListener('submit', async e => {
       e.preventDefault();
 
+      // 🔥 Anti-spam 1 : Honeypot invisible
+      const honey = document.getElementById("website").value.trim();
+      if (honey !== "") {
+        console.log("SPAM DETECTÉ (honeypot)");
+        window.location.href = "confirmation.html";
+        return;
+      }
+
+      // 🔥 Anti-spam 2 : Temps minimum (< 1.2 sec = bot)
+      if (Date.now() - window.formStart < 1200) {
+        alert("Envoi trop rapide, réessayez.");
+        return;
+      }
+
       const formData = {
         name: contactForm.name.value,
         email: contactForm.email.value,
         title: contactForm.title.value,
-        message: contactForm.message.value
+        message: contactForm.message.value,
+        website: honey
       };
 
       try {
-        const response = await fetch(`${BACKEND_URL}`, {
+        const response = await fetch(`${BACKEND_URL}/contact`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -70,15 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
 
         if(result.success){
-          console.log("Mail envoyé ✅");
           window.location.href = 'confirmation.html';
         } else {
           console.error("Erreur backend:", result.message);
-          alert("Erreur lors de l'envoi, réessayez.");
+          alert("Erreur lors de l'envoi.");
         }
       } catch(err){
         console.error("Erreur réseau:", err);
-        alert("Erreur lors de l'envoi, réessayez.");
+        alert("Erreur lors de l'envoi.");
       }
     });
   }
