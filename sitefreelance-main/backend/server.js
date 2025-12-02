@@ -9,11 +9,16 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Endpoint formulaire
+// ➤ Route test GET pour Render (OBLIGATOIRE)
+app.get("/", (req, res) => {
+  res.send("Backend opérationnel 👍");
+});
+
+// ➤ Endpoint formulaire
 app.post('/contact', async (req, res) => {
   const { name, email, title, message } = req.body;
 
-  if(!name || !email || !title || !message){
+  if (!name || !email || !title || !message) {
     return res.status(400).json({ success: false, message: "Tous les champs sont requis" });
   }
 
@@ -39,6 +44,7 @@ app.post('/contact', async (req, res) => {
   }
 });
 
+// ➤ Démarrage serveur
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Serveur démarré sur le port ${process.env.PORT || 3000} ✅`);
 });
