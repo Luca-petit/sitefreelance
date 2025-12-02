@@ -1,5 +1,5 @@
 // ====== Config ======
-const BACKEND_URL = "http://localhost:3000"; // Remplace par l'URL de ton backend Render en prod
+const BACKEND_URL = "https://sitefreelance.onrender.com"; // Remplace par l'URL de ton backend Render en prod
 
 // ====== Menu mobile ======
 const menuBtn = document.getElementById("menuBtn");
