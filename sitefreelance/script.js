@@ -1,103 +1,165 @@
-// ====== Test de chargement ======
-console.log("Script chargé avec anti-spam PRO 🚀");
+console.log("Script chargé ✅");
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-  // ====== CONFIG BACKEND ======
   const BACKEND_URL = "https://sitefreelance.onrender.com";
 
-  // ====== Temps de début (anti-spam) ======
-  window.formStart = Date.now();
+  let deleteToken = null;
+  let deleteId = null;
+  let reviewsData = [];
+  let reviewsShown = 5;
 
-  // ====== MENU MOBILE ======
-  const menuBtn = document.getElementById('menuBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
-  const navLinks = document.getElementById("navLinks");
+  // ----------------------------------------
+  // ⭐ Sélection étoiles
+  // ----------------------------------------
+  const stars = document.querySelectorAll(".star");
+  const ratingInput = document.getElementById("rating");
 
-  if(menuBtn && mobileMenu){
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('active');
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      const v = star.dataset.value;
+      ratingInput.value = v;
+      stars.forEach(s => s.classList.toggle("selected", s.dataset.value <= v));
     });
-  }
-
-  if(menuBtn && navLinks){
-    menuBtn.addEventListener("click", () => {
-      navLinks.classList.toggle("active");
+    star.addEventListener("mouseover", () => {
+      const v = star.dataset.value;
+      stars.forEach(s => s.classList.toggle("hover", s.dataset.value <= v));
     });
-
-    navLinks.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", () => {
-        navLinks.classList.remove("active");
-        mobileMenu?.classList.remove("active");
-      });
-    });
-  }
-
-  // ====== SMOOTH SCROLL ======
-  document.querySelectorAll('a[href^="#"]').forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const target = document.querySelector(link.getAttribute('href'));
-      if(target){
-        target.scrollIntoView({ behavior: 'smooth' });
-        mobileMenu?.classList.remove('active');
-      }
+    star.addEventListener("mouseout", () => {
+      stars.forEach(s => s.classList.remove("hover"));
     });
   });
 
-  // ====== ANNÉE FOOTER ======
-  const yearEl = document.getElementById('year');
-  if(yearEl) yearEl.textContent = new Date().getFullYear();
+  // ----------------------------------------
+  // 📤 Envoyer AVIS
+  // ----------------------------------------
+  const form = document.getElementById("reviewForm");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  // ====== FORMULAIRE CONTACT ======
-  const contactForm = document.getElementById('contactForm');
+    const data = {
+      name: form.name.value,
+      rating: form.rating.value,
+      message: form.message.value
+    };
 
-  if(contactForm){
-    contactForm.addEventListener('submit', async e => {
-      e.preventDefault();
-
-      // 🔥 Anti-spam 1 : Honeypot invisible
-      const honey = document.getElementById("website").value.trim();
-      if (honey !== "") {
-        console.log("SPAM DETECTÉ (honeypot)");
-        window.location.href = "confirmation.html";
-        return;
-      }
-
-      // 🔥 Anti-spam 2 : Temps minimum (< 1.2 sec = bot)
-      if (Date.now() - window.formStart < 1200) {
-        alert("Envoi trop rapide, réessayez.");
-        return;
-      }
-
-      const formData = {
-        name: contactForm.name.value,
-        email: contactForm.email.value,
-        title: contactForm.title.value,
-        message: contactForm.message.value,
-        website: honey
-      };
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/contact`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        const result = await response.json();
-
-        if(result.success){
-          window.location.href = 'confirmation.html';
-        } else {
-          console.error("Erreur backend:", result.message);
-          alert("Erreur lors de l'envoi.");
-        }
-      } catch(err){
-        console.error("Erreur réseau:", err);
-        alert("Erreur lors de l'envoi.");
-      }
+    const res = await fetch(`${BACKEND_URL}/reviews`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
     });
+
+    const result = await res.json();
+
+    if (result.success) {
+      deleteToken = result.delete_token;
+      deleteId = result.id;
+
+      alert("Merci pour votre avis !");
+      form.reset();
+
+      stars.forEach(s => s.classList.remove("selected"));
+      ratingInput.value = "";
+
+      loadReviews(true);
+    }
+  });
+
+  // ----------------------------------------
+  // 📥 Charger AVIS
+  // ----------------------------------------
+  async function loadReviews(scroll = false) {
+    const res = await fetch(`${BACKEND_URL}/reviews`);
+    reviewsData = await res.json();
+
+    updateAverage();
+    renderReviews();
+
+    if (scroll) window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }
 
+  // ----------------------------------------
+  // ⭐ Calcul NOTE MOYENNE
+  // ----------------------------------------
+  function updateAverage() {
+    if (reviewsData.length === 0) return;
+
+    const avg =
+      reviewsData.reduce((acc, r) => acc + Number(r.rating), 0)
+      / reviewsData.length;
+
+    document.getElementById("averageNote").innerText =
+      avg.toFixed(1) + " ⭐ (" + reviewsData.length + " avis)";
+  }
+
+  // ----------------------------------------
+  // 🔽 Bouton voir plus
+  // ----------------------------------------
+  document.getElementById("loadMoreBtn").addEventListener("click", () => {
+    reviewsShown += 5;
+    renderReviews();
+  });
+
+  // ----------------------------------------
+  // 🖨 Afficher AVIS
+  // ----------------------------------------
+  function renderReviews() {
+    const container = document.getElementById("reviewsList");
+    container.innerHTML = "";
+
+    reviewsData.slice(0, reviewsShown).forEach(r => {
+      const stars = "⭐".repeat(r.rating);
+
+      const delButton =
+        deleteToken && deleteId === r.id
+          ? `<button class="delete-btn" data-id="${r.id}">Supprimer</button>`
+          : "";
+
+      const html = `
+        <div class="review-card">
+          <div class="review-header">
+            <strong>${r.name}</strong>
+            <span>${stars}</span>
+          </div>
+          <p>${r.message}</p>
+          <small>${new Date(r.date).toLocaleDateString()}</small>
+          ${delButton}
+        </div>`;
+      container.innerHTML += html;
+    });
+
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", deleteReview);
+    });
+
+    if (reviewsShown < reviewsData.length)
+      loadMoreBtn.style.display = "block";
+    else
+      loadMoreBtn.style.display = "none";
+  }
+
+  // ----------------------------------------
+  // ❌ Supprimer AVIS
+  // ----------------------------------------
+  async function deleteReview(e) {
+    const id = e.target.dataset.id;
+
+    const res = await fetch(`${BACKEND_URL}/reviews/delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, delete_token: deleteToken })
+    });
+
+    const r = await res.json();
+
+    if (r.success) {
+      alert("Avis supprimé !");
+      deleteToken = null;
+      deleteId = null;
+      loadReviews();
+    }
+  }
+
+  loadReviews();
 });
+

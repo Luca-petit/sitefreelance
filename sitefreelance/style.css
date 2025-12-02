@@ -553,3 +553,148 @@ header {
     font-weight: 600;
   }
 }
+
+/* =============================== */
+/* ⭐ AVIS — STYLE TRUSTPILOT PRO */
+/* =============================== */
+
+#avis {
+  margin-top: 60px;
+}
+
+/* --- Note moyenne --- */
+.average-note {
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: #111;
+  margin-bottom: 25px;
+}
+
+.average-note::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: #00b67a;
+  margin: 10px auto 0;
+  border-radius: 3px;
+}
+
+/* --- Container d’avis --- */
+.reviews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+/* --- Carte d’avis PREMIUM --- */
+.review-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid #e3e3e3;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.09);
+}
+
+/* --- Entête avis --- */
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.review-header strong {
+  font-size: 16px;
+  color: #111;
+}
+
+/* --- Étoiles Trustpilot --- */
+.review-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.review-stars span {
+  color: #00b67a; /* Trustpilot green */
+  font-size: 18px;
+}
+
+/* --- Message --- */
+.review-message {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  margin: 8px 0 12px;
+}
+
+/* --- Date --- */
+.review-date {
+  font-size: 12px;
+  color: #777;
+}
+
+/* --- Bouton supprimer --- */
+.delete-btn {
+  background: transparent;
+  color: #888;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 8px;
+  float: right;
+}
+
+.delete-btn:hover {
+  color: #d11a2a;
+}
+
+/* --- Bouton voir plus --- */
+.load-more {
+  background: #00b67a;
+  color: white;
+  padding: 12px 26px;
+  border-radius: 8px;
+  margin: 15px auto;
+  border: none;
+  display: block;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.load-more:hover {
+  background: #01945f;
+}
+
+/* =============================== */
+/* ⭐ Étoiles sélecteur formulaire */
+/* =============================== */
+
+.stars-selector {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.stars-selector .star {
+  color: #ccc;
+  transition: 0.2s;
+}
+
+.stars-selector .star.hover,
+.stars-selector .star.selected {
+  color: #00b67a;
+}
+
+
