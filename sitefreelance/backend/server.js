@@ -1,4 +1,29 @@
-require('dotenv').config();
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+// Crée la table automatiquement
+async function createReviewsTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        message TEXT NOT NULL,
+        date TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log("Table reviews OK ✔️");
+  } catch (err) {
+    console.error("Erreur création table :", err);
+  }
+}
+
+createReviewsTable();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
