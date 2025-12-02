@@ -1,48 +1,39 @@
-// ====== Config ======
-const BACKEND_URL = "https://sitefreelance.onrender.com"; // Remplace par l'URL de ton backend Render en prod
+// Test de chargement
+console.log("Script chargé ✅");
 
-// ====== Menu mobile ======
-const menuBtn = document.getElementById("menuBtn");
-const mobileMenu = document.getElementById("mobileMenu");
-const navLinks = document.getElementById("navLinks");
+document.addEventListener('DOMContentLoaded', () => {
 
-if(menuBtn && mobileMenu){
-  menuBtn.addEventListener("click", () => {
-    mobileMenu.classList.toggle("active");
-    navLinks.classList.toggle("active");
-  });
-}
+  // --- MENU MOBILE ---
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
 
-// Ferme le menu quand on clique sur un lien
-if(navLinks){
-  navLinks.querySelectorAll("a").forEach(link => {
-    link.addEventListener("click", () => {
-      navLinks.classList.remove("active");
-      if(mobileMenu) mobileMenu.classList.remove("active");
+  if(menuBtn && mobileMenu){
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('active');
+    });
+  }
+
+  // --- SMOOTH SCROLL ---
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if(target){
+        target.scrollIntoView({ behavior: 'smooth' });
+        mobileMenu?.classList.remove('active');
+      }
     });
   });
-}
 
-// ====== Smooth scroll ======
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if(target){
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
-});
+  // --- ANNÉE FOOTER ---
+  const yearEl = document.getElementById('year');
+  if(yearEl) yearEl.textContent = new Date().getFullYear();
 
-// ====== Année du footer ======
-const yearEl = document.getElementById('year');
-if(yearEl) yearEl.textContent = new Date().getFullYear();
-
-// ====== Formulaire contact ======
+ // Formulaire
 const contactForm = document.getElementById('contactForm');
 
 if(contactForm){
-  contactForm.addEventListener('submit', async (e) => {
+  contactForm.addEventListener('submit', async e => {
     e.preventDefault();
 
     const formData = {
@@ -53,25 +44,40 @@ if(contactForm){
     };
 
     try {
-      const response = await fetch(`${BACKEND_URL}/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('https://sitefreelance.onrender.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
       const result = await response.json();
-
       if(result.success){
         console.log("Mail envoyé ✅");
         window.location.href = 'confirmation.html';
       } else {
-        console.error("Erreur backend:", result.message);
         alert("Erreur lors de l'envoi, réessayez.");
       }
-    } catch (err) {
-      console.error("Erreur réseau:", err);
+    } catch(err){
+      console.error(err);
       alert("Erreur lors de l'envoi, réessayez.");
     }
   });
 }
 
+
+  // --- NAV LINKS (menu burger autre version) ---
+  const navLinks = document.getElementById("navLinks");
+
+  if(menuBtn && navLinks){
+    menuBtn.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+
+    navLinks.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("active");
+      });
+    });
+  }
+
+});
