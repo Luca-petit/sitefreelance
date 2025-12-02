@@ -4,7 +4,7 @@ console.log("Script chargé ✅");
 document.addEventListener('DOMContentLoaded', () => {
 
   // ====== CONFIG BACKEND ======
-  const BACKEND_URL = "https://sitefreelance.onrender.com"; // Ton backend Render
+  const BACKEND_URL = "https://sitefreelance.onrender.com/contact"; // Ton backend Render
 
   // ====== MENU MOBILE ======
   const menuBtn = document.getElementById('menuBtn');
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const response = await fetch(`${BACKEND_URL}/contact`, {
+        const response = await fetch(`${BACKEND_URL}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
