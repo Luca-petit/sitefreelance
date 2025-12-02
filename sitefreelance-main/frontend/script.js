@@ -1,11 +1,15 @@
-// Test de chargement
+// ====== Test de chargement ======
 console.log("Script chargé ✅");
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // --- MENU MOBILE ---
+  // ====== CONFIG BACKEND ======
+  const BACKEND_URL = "https://sitefreelance.onrender.com"; // Ton backend Render
+
+  // ====== MENU MOBILE ======
   const menuBtn = document.getElementById('menuBtn');
   const mobileMenu = document.getElementById('mobileMenu');
+  const navLinks = document.getElementById("navLinks");
 
   if(menuBtn && mobileMenu){
     menuBtn.addEventListener('click', () => {
@@ -13,7 +17,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- SMOOTH SCROLL ---
+  if(menuBtn && navLinks){
+    menuBtn.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+
+    navLinks.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("active");
+        mobileMenu?.classList.remove("active");
+      });
+    });
+  }
+
+  // ====== SMOOTH SCROLL ======
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
@@ -25,58 +42,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- ANNÉE FOOTER ---
+  // ====== ANNÉE FOOTER ======
   const yearEl = document.getElementById('year');
   if(yearEl) yearEl.textContent = new Date().getFullYear();
 
- // Formulaire
-const contactForm = document.getElementById('contactForm');
+  // ====== FORMULAIRE CONTACT ======
+  const contactForm = document.getElementById('contactForm');
 
-if(contactForm){
-  contactForm.addEventListener('submit', async e => {
-    e.preventDefault();
+  if(contactForm){
+    contactForm.addEventListener('submit', async e => {
+      e.preventDefault();
 
-    const formData = {
-      name: contactForm.name.value,
-      email: contactForm.email.value,
-      title: contactForm.title.value,
-      message: contactForm.message.value
-    };
+      const formData = {
+        name: contactForm.name.value,
+        email: contactForm.email.value,
+        title: contactForm.title.value,
+        message: contactForm.message.value
+      };
 
-    try {
-      const response = await fetch('https://sitefreelance.onrender.com/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      try {
+        const response = await fetch(`${BACKEND_URL}/contact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
 
-      const result = await response.json();
-      if(result.success){
-        console.log("Mail envoyé ✅");
-        window.location.href = 'confirmation.html';
-      } else {
+        const result = await response.json();
+
+        if(result.success){
+          console.log("Mail envoyé ✅");
+          window.location.href = 'confirmation.html';
+        } else {
+          console.error("Erreur backend:", result.message);
+          alert("Erreur lors de l'envoi, réessayez.");
+        }
+      } catch(err){
+        console.error("Erreur réseau:", err);
         alert("Erreur lors de l'envoi, réessayez.");
       }
-    } catch(err){
-      console.error(err);
-      alert("Erreur lors de l'envoi, réessayez.");
-    }
-  });
-}
-
-
-  // --- NAV LINKS (menu burger autre version) ---
-  const navLinks = document.getElementById("navLinks");
-
-  if(menuBtn && navLinks){
-    menuBtn.addEventListener("click", () => {
-      navLinks.classList.toggle("active");
-    });
-
-    navLinks.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", () => {
-        navLinks.classList.remove("active");
-      });
     });
   }
 
