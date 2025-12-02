@@ -44,7 +44,7 @@ if(contactForm){
     };
 
     try {
-      const response = await fetch('https://sitefreelance-backend.onrender.com/contact', {
+      const response = await fetch('https://sitefreelance.onrender.com/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
