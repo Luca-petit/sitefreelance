@@ -33,12 +33,57 @@ document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  // ======================================================
+// =============== FORMULAIRE CONTACT ===================
+// ======================================================
+
+const BACKEND = "https://sitefreelance.onrender.com";
+
+const contactForm = document.getElementById("contactForm");
+
+if (contactForm) {
+  contactForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+      name: e.target.name.value,
+      email: e.target.email.value,
+      title: e.target.title.value,
+      message: e.target.message.value,
+      website: e.target.website.value // honeypot
+    };
+
+    console.log("⏳ Envoi du message…");
+
+    try {
+      const response = await fetch(`${BACKEND}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const res = await response.json();
+
+      if (res.success) {
+        console.log("✔️ Message envoyé !");
+        window.location.href = "confirmation.html";
+      } else {
+        alert("Erreur lors de l’envoi. Réessaie !");
+        console.error(res);
+      }
+
+    } catch (err) {
+      console.error("Erreur réseau :", err);
+      alert("Impossible d’envoyer le message.");
+    }
+  });
+}
+
+
 
   // ======================================================
   // ====================== AVIS ===========================
   // ======================================================
-
-  const BACKEND = "https://sitefreelance.onrender.com";
 
   // ⭐ Sélection d'étoiles
   let selectedRating = 0;
