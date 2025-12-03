@@ -73,14 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await r.json();
 
     if (res.success) {
-      localStorage.setItem("delete_token_" + res.id, res.delete_token);
-      e.target.reset();
-      selectedRating = 0;
+  localStorage.setItem("delete_token_" + res.id, res.delete_token);
+  window.location.href = "review-confirmation.html";
+}
 
-      document.querySelectorAll("#starSelector i").forEach(s => s.classList.remove("active"));
-
-      loadReviews();
-    }
   });
 
   // 📥 Charger avis
