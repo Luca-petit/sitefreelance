@@ -158,6 +158,8 @@ if (contactForm) {
           <p>${r.message}</p>
 
           ${token ? `<button onclick="deleteReview(${r.id})" class="review-delete">Supprimer</button>` : ""}
+                      <button onclick="adminDeleteReview(${r.id})" class="review-delete admin-btn">🛑 Admin</button>
+
         </div>
       `;
     });
@@ -193,5 +195,26 @@ if (contactForm) {
   loadReviews();
 
 });
+
+window.adminDeleteReview = async function (id) {
+  const admin_secret = prompt("Mot de passe admin :");
+
+  if (!admin_secret) return;
+
+  const r = await fetch(`${BACKEND}/reviews/admin-delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, admin_secret })
+  });
+
+  const res = await r.json();
+
+  if (res.success) {
+    alert("Avis supprimé ✔️");
+    loadReviews();
+  } else {
+    alert("Erreur ou mot de passe incorrect ❌");
+  }
+};
 
 

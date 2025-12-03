@@ -707,3 +707,12 @@ header {
 }
 
 
+.admin-btn {
+  background: #ff4b4b;
+  color: white;
+  margin-top: 8px;
+}
+
+.admin-btn:hover {
+  background: #d43d3d;
+}

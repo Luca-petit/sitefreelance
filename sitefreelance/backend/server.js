@@ -61,7 +61,6 @@ app.get("/", (req, res) => {
   res.send("Backend opérationnel 👍");
 });
 
-
 // ----------------------------------
 // 📩 FORMULAIRE CONTACT
 // ----------------------------------
@@ -168,4 +167,30 @@ app.post("/reviews/delete", async (req, res) => {
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Serveur opérationnel 🔥");
+});
+
+// ----------------------------------
+// ❌ SUPPRESSION ADMIN (créateur)
+// ----------------------------------
+app.post("/reviews/admin-delete", async (req, res) => {
+  const { id, admin_secret } = req.body;
+
+  if (admin_secret !== process.env.ADMIN_SECRET) {
+    return res.status(403).json({ success: false, error: "Not authorized" });
+  }
+
+  try {
+    const result = await pool.query(
+      "DELETE FROM reviews WHERE id=$1",
+      [id]
+    );
+
+    if (result.rowCount === 0)
+      return res.json({ success: false, error: "Not found" });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Erreur delete admin :", err);
+    res.status(500).json({ success: false });
+  }
 });
