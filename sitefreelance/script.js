@@ -1,26 +1,13 @@
-// ====== Test de chargement ======
-console.log("Script chargé avec anti-spam PRO 🚀");
+console.log("Script chargé ✅");
 
+// Attente DOM
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ====== CONFIG BACKEND ======
-  const BACKEND_URL = "https://sitefreelance.onrender.com";
-
-  // ====== Temps de début (anti-spam) ======
-  window.formStart = Date.now();
-
-  // ====== MENU MOBILE ======
+  // ---------------- MENU HAMBURGER ----------------
   const menuBtn = document.getElementById('menuBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
   const navLinks = document.getElementById("navLinks");
 
-  if(menuBtn && mobileMenu){
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('active');
-    });
-  }
-
-  if(menuBtn && navLinks){
+  if (menuBtn && navLinks) {
     menuBtn.addEventListener("click", () => {
       navLinks.classList.toggle("active");
     });
@@ -28,76 +15,129 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", () => {
         navLinks.classList.remove("active");
-        mobileMenu?.classList.remove("active");
       });
     });
   }
 
-  // ====== SMOOTH SCROLL ======
+  // ---------------- SMOOTH SCROLL ----------------
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
       const target = document.querySelector(link.getAttribute('href'));
-      if(target){
+      if (target) {
         target.scrollIntoView({ behavior: 'smooth' });
-        mobileMenu?.classList.remove('active');
       }
     });
   });
 
-  // ====== ANNÉE FOOTER ======
+  // ---------------- FOOTER YEAR ----------------
   const yearEl = document.getElementById('year');
-  if(yearEl) yearEl.textContent = new Date().getFullYear();
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // ====== FORMULAIRE CONTACT ======
-  const contactForm = document.getElementById('contactForm');
 
-  if(contactForm){
-    contactForm.addEventListener('submit', async e => {
-      e.preventDefault();
+  // ======================================================
+  // ====================== AVIS ===========================
+  // ======================================================
 
-      // 🔥 Anti-spam 1 : Honeypot invisible
-      const honey = document.getElementById("website").value.trim();
-      if (honey !== "") {
-        console.log("SPAM DETECTÉ (honeypot)");
-        window.location.href = "confirmation.html";
-        return;
-      }
+  const BACKEND = "https://sitefreelance.onrender.com";
 
-      // 🔥 Anti-spam 2 : Temps minimum (< 1.2 sec = bot)
-      if (Date.now() - window.formStart < 1200) {
-        alert("Envoi trop rapide, réessayez.");
-        return;
-      }
+  // ⭐ Sélection d'étoiles
+  let selectedRating = 0;
+  document.querySelectorAll("#starSelector i").forEach(star => {
+    star.addEventListener("click", () => {
+      selectedRating = star.dataset.star;
 
-      const formData = {
-        name: contactForm.name.value,
-        email: contactForm.email.value,
-        title: contactForm.title.value,
-        message: contactForm.message.value,
-        website: honey
-      };
+      document.querySelectorAll("#starSelector i").forEach(s =>
+        s.classList.toggle("active", s.dataset.star <= selectedRating)
+      );
+    });
+  });
 
-      try {
-        const response = await fetch(`${BACKEND_URL}/contact`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
+  // 📩 Envoi avis
+  document.getElementById("reviewForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-        const result = await response.json();
+    if (selectedRating == 0) return alert("Choisis une note ⭐");
 
-        if(result.success){
-          window.location.href = 'confirmation.html';
-        } else {
-          console.error("Erreur backend:", result.message);
-          alert("Erreur lors de l'envoi.");
-        }
-      } catch(err){
-        console.error("Erreur réseau:", err);
-        alert("Erreur lors de l'envoi.");
-      }
+    const data = {
+      name: e.target.name.value,
+      message: e.target.message.value,
+      rating: selectedRating
+    };
+
+    const r = await fetch(`${BACKEND}/reviews`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const res = await r.json();
+
+    if (res.spam) return alert("Tu dois attendre 1 minute entre chaque avis !");
+
+    if (res.success) {
+      localStorage.setItem("delete_token_" + res.id, res.delete_token);
+      e.target.reset();
+      selectedRating = 0;
+      loadReviews();
+    }
+  });
+
+  // 📥 Charger avis
+  async function loadReviews() {
+    const req = await fetch(`${BACKEND}/reviews`);
+    const data = await req.json();
+
+    document.getElementById("avgRating").innerText = data.average;
+
+    const track = document.getElementById("carouselTrack");
+    track.innerHTML = "";
+
+    data.reviews.forEach(r => {
+      const token = localStorage.getItem("delete_token_" + r.id);
+
+      track.innerHTML += `
+        <div class="review-card">
+          <div class="review-header">
+            <strong>${r.name}</strong>
+            <span class="review-stars">${"★".repeat(r.rating)}</span>
+          </div>
+          <p>${r.message}</p>
+
+          ${token ? `<button onclick="deleteReview(${r.id})" class="review-delete">Supprimer</button>` : ""}
+        </div>
+      `;
     });
   }
 
+  // ❌ Supprimer avis
+  window.deleteReview = async function (id) {
+    const token = localStorage.getItem("delete_token_" + id);
+
+    const r = await fetch(`${BACKEND}/reviews/delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, delete_token: token })
+    });
+
+    const res = await r.json();
+    if (res.success) {
+      localStorage.removeItem("delete_token_" + id);
+      loadReviews();
+    }
+  };
+
+  // ---------------- CAROUSEL ----------------
+  document.getElementById("nextReview").addEventListener("click", () => {
+    document.getElementById("carouselTrack").scrollBy({ left: 320, behavior: "smooth" });
+  });
+
+  document.getElementById("prevReview").addEventListener("click", () => {
+    document.getElementById("carouselTrack").scrollBy({ left: -320, behavior: "smooth" });
+  });
+
+  // Charge au démarrage
+  loadReviews();
+
 });
+

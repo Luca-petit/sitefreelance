@@ -554,4 +554,156 @@ header {
   }
 }
 
+/* ---------- AVIS (Design PRO) ---------- */
+
+.reviews-section {
+  margin-top: 80px;
+  padding-bottom: 50px;
+}
+
+.reviews-summary {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+/* Formulaire d'avis */
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 500px;
+  margin: 0 auto 40px auto;
+}
+
+.review-form input,
+.review-form textarea {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.review-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.stars {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.stars i {
+  font-size: 32px;
+  color: #ccc;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.stars i.active {
+  color: #ffbf00;
+  transform: scale(1.1);
+}
+
+/* Carousel */
+.carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 25px;
+  gap: 10px;
+}
+
+.carousel-btn {
+  background: none;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  color: #444;
+  transition: 0.2s;
+}
+
+.carousel-btn:hover {
+  color: black;
+}
+
+.carousel-track {
+  width: 85%;
+  display: flex;
+  overflow: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Cards d'avis */
+.review-card {
+  min-width: 300px;
+  max-width: 300px;
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  margin: 0 10px;
+  box-shadow: 0px 4px 14px rgba(0,0,0,0.08);
+  flex-shrink: 0;
+  transition: 0.2s;
+}
+
+.review-card:hover {
+  transform: translateY(-3px);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.review-stars {
+  color: #ffbf00;
+  font-size: 18px;
+}
+
+.review-delete {
+  margin-top: 10px;
+  border: none;
+  background: #ff4444;
+  color: white;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.review-delete:hover {
+  background: #dd0000;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .carousel-track {
+    width: 100%;
+  }
+}
+
+.btn {
+  background: black;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 50px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.btn:hover {
+  background: #222;
+  transform: scale(1.03);
+}
+
 
