@@ -182,6 +182,30 @@ if (contactForm) {
     }
   };
 
+  window.adminDeleteReview = async function (id) {
+  const password = prompt("Mot de passe admin :");
+
+  if (!password) return;
+
+  const r = await fetch(`${BACKEND}/admin/reviews/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, password })
+  });
+
+  const res = await r.json();
+
+  if (res.success) {
+    alert("Avis supprimé ✔️");
+    loadReviews();
+  } else if (res.error === "wrong_password") {
+    alert("❌ Mot de passe incorrect");
+  } else {
+    alert("⚠️ Erreur lors de la suppression");
+  }
+};
+
+
   // ---------------- CAROUSEL ----------------
   document.getElementById("nextReview").addEventListener("click", () => {
     document.getElementById("carouselTrack").scrollBy({ left: 320, behavior: "smooth" });
@@ -196,25 +220,6 @@ if (contactForm) {
 
 });
 
-window.adminDeleteReview = async function (id) {
-  const admin_secret = prompt("Mot de passe admin :");
 
-  if (!admin_secret) return;
-
-  const r = await fetch(`${BACKEND}/reviews/admin-delete`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, admin_secret })
-  });
-
-  const res = await r.json();
-
-  if (res.success) {
-    alert("Avis supprimé ✔️");
-    loadReviews();
-  } else {
-    alert("Erreur ou mot de passe incorrect ❌");
-  }
-};
 
 

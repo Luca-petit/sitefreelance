@@ -170,27 +170,29 @@ app.listen(process.env.PORT || 3000, () => {
 });
 
 // ----------------------------------
-// ❌ SUPPRESSION ADMIN (créateur)
+// 🛑 SUPPRESSION ADMIN (mot de passe)
 // ----------------------------------
-app.post("/reviews/admin-delete", async (req, res) => {
-  const { id, admin_secret } = req.body;
+app.post("/admin/reviews/delete", async (req, res) => {
+  const { id, password } = req.body;
 
-  if (admin_secret !== process.env.ADMIN_SECRET) {
-    return res.status(403).json({ success: false, error: "Not authorized" });
+  // Mot de passe admin
+  const ADMIN_PASS = process.env.ADMIN_PASS;
+
+  if (!password || password !== ADMIN_PASS) {
+    return res.json({ success: false, error: "wrong_password" });
   }
 
   try {
-    const result = await pool.query(
-      "DELETE FROM reviews WHERE id=$1",
-      [id]
-    );
+    const result = await pool.query("DELETE FROM reviews WHERE id=$1", [id]);
 
-    if (result.rowCount === 0)
-      return res.json({ success: false, error: "Not found" });
+    if (result.rowCount === 0) {
+      return res.json({ success: false, error: "not_found" });
+    }
 
     res.json({ success: true });
   } catch (err) {
-    console.error("Erreur delete admin :", err);
-    res.status(500).json({ success: false });
+    console.error("Erreur delete admin:", err);
+    res.status(500).json({ success: false, error: "server_error" });
   }
 });
+
