@@ -1,6 +1,5 @@
 console.log("Script chargé ✅");
 
-// Attente DOM
 document.addEventListener('DOMContentLoaded', () => {
 
   // ---------------- MENU HAMBURGER ----------------
@@ -73,12 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const res = await r.json();
 
-    if (res.spam) return alert("Tu dois attendre 1 minute entre chaque avis !");
-
     if (res.success) {
       localStorage.setItem("delete_token_" + res.id, res.delete_token);
       e.target.reset();
       selectedRating = 0;
+
+      document.querySelectorAll("#starSelector i").forEach(s => s.classList.remove("active"));
+
       loadReviews();
     }
   });
@@ -86,14 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // 📥 Charger avis
   async function loadReviews() {
     const req = await fetch(`${BACKEND}/reviews`);
-    const data = await req.json();
+    const reviews = await req.json();   // <-- TON BACKEND RENVOIE UN TABLEAU
 
-    document.getElementById("avgRating").innerText = data.average;
+    if (!Array.isArray(reviews)) {
+      console.error("Réponse avis invalide :", reviews);
+      return;
+    }
 
+    // ---- Calcul moyenne ----
+    if (reviews.length > 0) {
+      const avg = (reviews.reduce((a, b) => a + b.rating, 0) / reviews.length).toFixed(1);
+      document.getElementById("avgRating").innerText = avg;
+    } else {
+      document.getElementById("avgRating").innerText = "0.0";
+    }
+
+    // ---- Remplir carrousel ----
     const track = document.getElementById("carouselTrack");
     track.innerHTML = "";
 
-    data.reviews.forEach(r => {
+    reviews.forEach(r => {
       const token = localStorage.getItem("delete_token_" + r.id);
 
       track.innerHTML += `
@@ -140,4 +152,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadReviews();
 
 });
+
 
