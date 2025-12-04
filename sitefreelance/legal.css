@@ -7,8 +7,6 @@ body {
   background: #ffffff;
   color: #222;
   line-height: 1.7;
-  max-width: 100%;
-  overflow-x: hidden;
 }
 
 .legal-container {
