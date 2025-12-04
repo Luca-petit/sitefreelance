@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Administration - Avis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div id="loginPanel" class="login-container">
+  <h2>Connexion Admin</h2>
+  <input type="password" id="adminPassword" placeholder="Mot de passe admin">
+  <button onclick="adminLogin()">Se connecter</button>
+  <p id="loginError"></p>
+</div>
+
+<div id="dashboard" class="dashboard hidden">
+  <h1>Dashboard Admin</h1>
+
+  <h3 id="avgRatingAdmin"></h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Note</th>
+        <th>Message</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody id="reviewsTable"></tbody>
+  </table>
+
+  <button class="logout-btn" onclick="logout()">Déconnexion</button>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

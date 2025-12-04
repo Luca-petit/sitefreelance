@@ -158,7 +158,7 @@ if (contactForm) {
           <p>${r.message}</p>
 
           ${token ? `<button onclick="deleteReview(${r.id})" class="review-delete">Supprimer</button>` : ""}
-                      <button onclick="adminDeleteReview(${r.id})" class="review-delete admin-btn">🛑 Admin</button>
+                      <button onclick="adminDeleteReview(${r.id})" class="review-delete admin-btn">🛑 Modération</button>
 
         </div>
       `;

@@ -165,6 +165,53 @@ app.post("/reviews/delete", async (req, res) => {
   }
 });
 
+// ----------------------------------
+// 🔐 ADMIN LOGIN
+// ----------------------------------
+app.post("/admin/login", (req, res) => {
+  const { password } = req.body;
+
+  if (password === process.env.ADMIN_PASSWORD) {
+    return res.json({ success: true, token: "admin_session_ok" });
+  }
+
+  res.json({ success: false });
+});
+
+// ----------------------------------
+// 📥 ADMIN — GET ALL REVIEWS
+// (Protégé)
+// ----------------------------------
+app.post("/admin/reviews", async (req, res) => {
+  if (req.body.token !== "admin_session_ok")
+    return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const r = await pool.query("SELECT * FROM reviews ORDER BY date DESC");
+    res.json({ reviews: r.rows });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur DB" });
+  }
+});
+
+// ----------------------------------
+// ❌ ADMIN — DELETE REVIEW
+// ----------------------------------
+app.post("/admin/review/delete", async (req, res) => {
+  const { id, token } = req.body;
+
+  if (token !== "admin_session_ok")
+    return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    await pool.query("DELETE FROM reviews WHERE id=$1", [id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur suppression" });
+  }
+});
+
+
 app.listen(process.env.PORT || 3000, () => {
   console.log("Serveur opérationnel 🔥");
 });

@@ -1,0 +1,77 @@
+body {
+  font-family: Inter, sans-serif;
+  background: #f3f4f6;
+  margin: 0;
+  padding: 0;
+}
+
+/* LOGIN PANEL */
+.login-container {
+  width: 350px;
+  margin: 120px auto;
+  padding: 25px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.login-container button {
+  width: 100%;
+  padding: 12px;
+  background: #4f46e5;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  margin-top: 15px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#loginError {
+  color: red;
+  margin-top: 10px;
+}
+
+/* DASHBOARD */
+.dashboard {
+  width: 90%;
+  max-width: 1200px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+}
+
+.hidden {
+  display: none;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.logout-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #ef4444;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
