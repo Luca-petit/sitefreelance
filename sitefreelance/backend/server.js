@@ -215,31 +215,3 @@ app.post("/admin/review/delete", async (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log("Serveur opérationnel 🔥");
 });
-
-// ----------------------------------
-// 🛑 SUPPRESSION ADMIN (mot de passe)
-// ----------------------------------
-app.post("/admin/reviews/delete", async (req, res) => {
-  const { id, password } = req.body;
-
-  // Mot de passe admin
-  const ADMIN_PASS = process.env.ADMIN_PASS;
-
-  if (!password || password !== ADMIN_PASS) {
-    return res.json({ success: false, error: "wrong_password" });
-  }
-
-  try {
-    const result = await pool.query("DELETE FROM reviews WHERE id=$1", [id]);
-
-    if (result.rowCount === 0) {
-      return res.json({ success: false, error: "not_found" });
-    }
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Erreur delete admin:", err);
-    res.status(500).json({ success: false, error: "server_error" });
-  }
-});
-

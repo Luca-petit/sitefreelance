@@ -158,8 +158,6 @@ if (contactForm) {
           <p>${r.message}</p>
 
           ${token ? `<button onclick="deleteReview(${r.id})" class="review-delete">Supprimer</button>` : ""}
-                      <button onclick="adminDeleteReview(${r.id})" class="review-delete admin-btn">🛑 Modération</button>
-
         </div>
       `;
     });
@@ -181,29 +179,6 @@ if (contactForm) {
       loadReviews();
     }
   };
-
-  window.adminDeleteReview = async function (id) {
-  const password = prompt("Mot de passe admin :");
-
-  if (!password) return;
-
-  const r = await fetch(`${BACKEND}/admin/reviews/delete`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, password })
-  });
-
-  const res = await r.json();
-
-  if (res.success) {
-    alert("Avis supprimé ✔️");
-    loadReviews();
-  } else if (res.error === "wrong_password") {
-    alert("❌ Mot de passe incorrect");
-  } else {
-    alert("⚠️ Erreur lors de la suppression");
-  }
-};
 
 
   // ---------------- CAROUSEL ----------------
