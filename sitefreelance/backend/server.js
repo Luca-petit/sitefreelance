@@ -21,19 +21,25 @@ const pool = new Pool({
 
 // Créer table si manque
 async function initDB() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS reviews (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL,
-      rating INT,
-      message TEXT NOT NULL,
-      delete_token TEXT,
-      date TIMESTAMP DEFAULT NOW()
-    );
-  `);
-  console.log("Table reviews OK");
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        rating INT,
+        message TEXT NOT NULL,
+        delete_token TEXT,
+        date TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log("Table reviews OK");
+  } catch (err) {
+    console.error("DB init failed:", err.message);
+    // NE PAS CRASH
+  }
 }
 initDB();
+
 
 // ----------------------------------
 // 🔧 ROUTE TEMPORAIRE POUR FIX DB
