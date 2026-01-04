@@ -195,6 +195,3 @@ if (contactForm) {
 
 });
 
-
-
-
