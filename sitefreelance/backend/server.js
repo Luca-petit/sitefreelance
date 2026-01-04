@@ -1,10 +1,14 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+require("dotenv").config();
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 const { Pool } = require("pg");
-const { Resend } = require('resend');
+const { Resend } = require("resend");
 const { v4: uuidv4 } = require("uuid");
+const dns = require("dns");
+
+// ✅ Force IPv4 first (fix ENETUNREACH sur certains hosts type Render)
+dns.setDefaultResultOrder("ipv4first");
 
 const app = express();
 app.use(cors());
@@ -12,14 +16,21 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // ----------------------------------
-// 🗄 PostgreSQL (avis)
+// 🗄 PostgreSQL (Supabase)
 // ----------------------------------
+if (!process.env.DATABASE_URL) {
+  console.error("❌ DATABASE_URL manquant dans les variables d'environnement");
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
+  max: 5
 });
 
-// Créer table si manque
+// ✅ Ne pas crash si DB down
 async function initDB() {
   try {
     await pool.query(`
@@ -32,63 +43,34 @@ async function initDB() {
         date TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log("Table reviews OK");
+    console.log("✅ Table reviews OK");
   } catch (err) {
-    console.error("DB init failed:", err.message);
-    // NE PAS CRASH
+    console.error("❌ DB init failed:", err.message);
   }
 }
 initDB();
-
-
-// ----------------------------------
-// 🔧 ROUTE TEMPORAIRE POUR FIX DB
-// ----------------------------------
-app.get("/fixdb", async (req, res) => {
-  try {
-    await pool.query(`ALTER TABLE reviews ADD COLUMN rating INT;`);
-  } catch (e) { console.log("rating déjà existant :", e.message); }
-
-  try {
-    await pool.query(`ALTER TABLE reviews ADD COLUMN delete_token TEXT;`);
-  } catch (e) { console.log("delete_token déjà existant :", e.message); }
-
-  res.send("✔️ Fix DB exécuté");
-});
 
 // ----------------------------------
 // ✉️ Resend (contact)
 // ----------------------------------
 const resend = new Resend(process.env.RESEND_API_KEY);
-
 let lastSendTimes = {};
 
-app.get("/", (req, res) => {
-  res.send("Backend opérationnel 👍");
-});
+app.get("/", (req, res) => res.send("Backend opérationnel 👍"));
 
 // ----------------------------------
-// 📩 FORMULAIRE CONTACT
+// 📩 CONTACT
 // ----------------------------------
-app.post('/contact', async (req, res) => {
+app.post("/contact", async (req, res) => {
   const { name, email, title, message, website } = req.body;
 
-  // Anti-spam (honeypot)
-  if (website && website.trim() !== "") {
-    console.log("SPAM honeypot");
-    return res.json({ success: true });
-  }
+  if (website && website.trim() !== "") return res.json({ success: true });
 
-  // Anti-spam IP
-  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-  if (lastSendTimes[ip] && Date.now() - lastSendTimes[ip] < 30000) {
-    console.log("SPAM fréquence");
-    return res.json({ success: true });
-  }
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+  if (lastSendTimes[ip] && Date.now() - lastSendTimes[ip] < 30000) return res.json({ success: true });
   lastSendTimes[ip] = Date.now();
 
-  if (!name || !email || !title || !message)
-    return res.status(400).json({ success: false });
+  if (!name || !email || !title || !message) return res.status(400).json({ success: false });
 
   try {
     await resend.emails.send({
@@ -98,7 +80,6 @@ app.post('/contact', async (req, res) => {
       subject: title,
       text: `Nom: ${name}\nEmail: ${email}\nMessage:\n${message}`
     });
-
     res.json({ success: true });
   } catch (err) {
     console.error("Erreur mail:", err);
@@ -111,9 +92,7 @@ app.post('/contact', async (req, res) => {
 // ----------------------------------
 app.post("/reviews", async (req, res) => {
   const { name, rating, message } = req.body;
-
-  if (!name || !rating || !message)
-    return res.status(400).json({ success: false });
+  if (!name || !rating || !message) return res.status(400).json({ success: false });
 
   const delete_token = uuidv4();
 
@@ -122,102 +101,74 @@ app.post("/reviews", async (req, res) => {
       "INSERT INTO reviews (name, rating, message, delete_token) VALUES ($1,$2,$3,$4) RETURNING id",
       [name, rating, message, delete_token]
     );
-
-    res.json({
-      success: true,
-      id: result.rows[0].id,
-      delete_token
-    });
+    res.json({ success: true, id: result.rows[0].id, delete_token });
   } catch (err) {
-    console.error("Erreur ajout avis:", err);
+    console.error("Erreur ajout avis:", err.message);
     res.status(500).json({ success: false });
   }
 });
 
 // ----------------------------------
-// 📥 RÉCUPÉRER AVIS
+// 📥 GET AVIS
 // ----------------------------------
 app.get("/reviews", async (req, res) => {
   try {
-    const r = await pool.query(
-      "SELECT * FROM reviews ORDER BY date DESC"
-    );
+    const r = await pool.query("SELECT * FROM reviews ORDER BY date DESC");
     res.json(r.rows);
   } catch (err) {
-    console.error("Erreur get avis:", err);
+    console.error("Erreur get avis:", err.message);
     res.status(500).json({ success: false });
   }
 });
 
 // ----------------------------------
-// ❌ SUPPRIMER AVIS
+// ❌ DELETE OWN REVIEW
 // ----------------------------------
 app.post("/reviews/delete", async (req, res) => {
   const { id, delete_token } = req.body;
 
   try {
-    const result = await pool.query(
-      "DELETE FROM reviews WHERE id=$1 AND delete_token=$2",
-      [id, delete_token]
-    );
-
-    if (result.rowCount === 0)
-      return res.json({ success: false });
-
+    const result = await pool.query("DELETE FROM reviews WHERE id=$1 AND delete_token=$2", [id, delete_token]);
+    if (result.rowCount === 0) return res.json({ success: false });
     res.json({ success: true });
   } catch (err) {
-    console.error("Erreur delete avis:", err);
+    console.error("Erreur delete avis:", err.message);
     res.status(500).json({ success: false });
   }
 });
 
 // ----------------------------------
-// 🔐 ADMIN LOGIN
+// 🔐 ADMIN
 // ----------------------------------
 app.post("/admin/login", (req, res) => {
   const { password } = req.body;
-
-  if (password === process.env.ADMIN_PASSWORD) {
-    return res.json({ success: true, token: "admin_session_ok" });
-  }
-
+  if (password === process.env.ADMIN_PASSWORD) return res.json({ success: true, token: "admin_session_ok" });
   res.json({ success: false });
 });
 
-// ----------------------------------
-// 📥 ADMIN — GET ALL REVIEWS
-// (Protégé)
-// ----------------------------------
 app.post("/admin/reviews", async (req, res) => {
-  if (req.body.token !== "admin_session_ok")
-    return res.status(401).json({ error: "Unauthorized" });
+  if (req.body.token !== "admin_session_ok") return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const r = await pool.query("SELECT * FROM reviews ORDER BY date DESC");
     res.json({ reviews: r.rows });
   } catch (err) {
+    console.error("Erreur admin reviews:", err.message);
     res.status(500).json({ error: "Erreur DB" });
   }
 });
 
-// ----------------------------------
-// ❌ ADMIN — DELETE REVIEW
-// ----------------------------------
 app.post("/admin/review/delete", async (req, res) => {
   const { id, token } = req.body;
-
-  if (token !== "admin_session_ok")
-    return res.status(401).json({ error: "Unauthorized" });
+  if (token !== "admin_session_ok") return res.status(401).json({ error: "Unauthorized" });
 
   try {
     await pool.query("DELETE FROM reviews WHERE id=$1", [id]);
     res.json({ success: true });
   } catch (err) {
+    console.error("Erreur admin delete:", err.message);
     res.status(500).json({ error: "Erreur suppression" });
   }
 });
 
-
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Serveur opérationnel 🔥");
-});
+app.listen(process.env.PORT || 3000, () => console.log("Serve🔥 Serveur opérationnel"));
