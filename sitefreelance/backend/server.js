@@ -16,24 +16,33 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // ----------------------------------
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 });
+
 
 // Créer table si manque
 async function initDB() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS reviews (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL,
-      rating INT,
-      message TEXT NOT NULL,
-      delete_token TEXT,
-      date TIMESTAMP DEFAULT NOW()
-    );
-  `);
-  console.log("Table reviews OK");
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        rating INT,
+        message TEXT NOT NULL,
+        delete_token TEXT,
+        date TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log("✅ Table reviews OK");
+  } catch (err) {
+    console.error("❌ DB init failed:", err.message);
+  }
 }
 initDB();
+
 
 // ----------------------------------
 // 🔧 ROUTE TEMPORAIRE POUR FIX DB
@@ -210,6 +219,16 @@ app.post("/admin/review/delete", async (req, res) => {
     res.status(500).json({ error: "Erreur suppression" });
   }
 });
+
+app.get("/health/db", async (req, res) => {
+  try {
+    const r = await pool.query("SELECT NOW() as now");
+    res.json({ ok: true, now: r.rows[0].now });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 
 
 app.listen(process.env.PORT || 3000, () => {
