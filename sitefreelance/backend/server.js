@@ -26,24 +26,31 @@ const pool = new Pool({
 
 
 // Créer table si manque
-async function initDB() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS reviews (
-        id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        rating INT,
-        message TEXT NOT NULL,
-        delete_token TEXT,
-        date TIMESTAMP DEFAULT NOW()
-      );
-    `);
-    console.log("✅ Table reviews OK");
-  } catch (err) {
-    console.error("❌ DB init failed:", err.message);
+async function initDB(retries = 10) {
+  while (retries > 0) {
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS reviews (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          rating INT,
+          message TEXT NOT NULL,
+          delete_token TEXT,
+          date TIMESTAMP DEFAULT NOW()
+        );
+      `);
+      console.log("✅ DB OK");
+      return;
+    } catch (err) {
+      console.log("⚠️ DB not ready, retry...", err.code || err.message);
+      retries--;
+      await new Promise(r => setTimeout(r, 2000));
+    }
   }
+  console.log("❌ DB unreachable after retries");
 }
 initDB();
+
 
 
 // ----------------------------------
